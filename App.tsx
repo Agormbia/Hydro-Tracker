@@ -1,20 +1,266 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
 
-export default function App() {
+import { Platform } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+
+
+type TabParamList = {
+  home: undefined;
+  statistics: undefined;
+  leaderboard: undefined;
+  achievementsTitle: undefined;
+  waterIntakeGuide: undefined;
+  settings: undefined;
+};
+
+type RootStackParamList = {
+  MainApp: undefined;
+  Login: undefined;
+  Signup: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
+
+// Components
+
+import SplashScreen from './components/SplashScreen';
+
+// Contexts
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { AchievementProvider } from './contexts/AchievementContext';
+import { WaterGoalProvider } from './contexts/WaterGoalContext';
+
+import { LeaderboardProvider } from './contexts/LeaderboardContext';
+
+// Themes
+import { lightTheme, darkTheme } from './styles/theme';
+
+// Screens
+import LoginScreen from './screens/LoginScreen';
+import SignupScreen from './screens/SignupScreen';
+import HomeScreen from './screens/HomeScreen';
+import StatisticsScreen from './screens/StatisticsScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import AchievementsScreen from './screens/AchievementsScreen';
+import WaterIntakeGuideScreen from './screens/WaterIntakeGuideScreen';
+import LeaderboardScreen from './screens/LeaderboardScreen';
+
+
+const AppTabs: React.FC = () => {
+
+  const { isDarkMode } = useTheme();
+  const { t } = useLanguage();
+  const currentTheme = isDarkMode ? darkTheme : lightTheme;
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+
+    <Tab.Navigator
+        screenOptions={({ route }: { route: { name: keyof TabParamList } }) => ({
+      tabBarIcon: ({ focused, color, size }: { focused: boolean; color: string; size: number }) => {
+        let iconName: keyof typeof Ionicons.glyphMap;
+
+        switch (route.name) {
+        case 'home':
+          iconName = focused ? 'water' : 'water-outline';
+          break;
+        case 'statistics':
+          iconName = focused ? 'stats-chart' : 'stats-chart-outline';
+          break;
+        case 'achievementsTitle':
+          iconName = focused ? 'trophy' : 'trophy-outline';
+          break;
+        case 'settings':
+          iconName = focused ? 'settings' : 'settings-outline';
+          break;
+        case 'waterIntakeGuide':
+          iconName = focused ? 'information-circle' : 'information-circle-outline';
+          break;
+        case 'leaderboard':
+          iconName = focused ? 'podium' : 'podium-outline';
+          break;
+        default:
+          iconName = 'help-outline';
+        }
+
+        return <Ionicons name={iconName} size={focused ? size * 1.2 : size} color={color} />;
+      },
+      tabBarActiveTintColor: currentTheme.colors.primary,
+      tabBarInactiveTintColor: currentTheme.colors.textSecondary,
+      tabBarHideOnKeyboard: true,
+      tabBarStyle: {
+        backgroundColor: currentTheme.colors.surface,
+        borderTopColor: currentTheme.colors.border,
+        height: 60,
+      },
+        tabBarLabelStyle: {
+        fontSize: 12,
+        paddingBottom: 5
+        },
+        headerTitleStyle: {
+        fontSize: 18,
+        color: currentTheme.colors.text,
+        },
+        headerStyle: {
+        backgroundColor: currentTheme.colors.surface,
+        borderBottomColor: currentTheme.colors.border,
+        borderBottomWidth: 1,
+        },
+        tabBarItemStyle: {
+        padding: 5,
+        },
+        tabBarIconStyle: {
+        marginTop: 5
+        }
+        })}
+
+
+
+
+
+    >
+        <Tab.Screen 
+          name="home" 
+          component={HomeScreen} 
+          options={{ title: t('home') }} 
+        />
+        <Tab.Screen 
+          name="statistics" 
+          component={StatisticsScreen} 
+          options={{ title: t('statistics') }} 
+        />
+        <Tab.Screen 
+          name="leaderboard" 
+          component={LeaderboardScreen} 
+          options={{ title: t('leaderboard') }} 
+        />
+        <Tab.Screen 
+          name="achievementsTitle" 
+          component={AchievementsScreen} 
+          options={{ title: t('achievementsTitle') }} 
+        />
+        <Tab.Screen 
+          name="waterIntakeGuide" 
+          component={WaterIntakeGuideScreen} 
+          options={{ title: t('waterIntakeGuide') }} 
+        />
+        <Tab.Screen 
+          name="settings" 
+          component={SettingsScreen} 
+          options={{ title: t('settings') }} 
+        />
+
+    </Tab.Navigator>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const AppNavigator: React.FC = () => {
+  const [isLoading, setIsLoading] = React.useState(true);
+  const { isDarkMode } = useTheme();
+
+  const currentTheme = isDarkMode ? darkTheme : lightTheme;
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2500); // Show splash screen for 2.5 seconds
+  }, []);
+
+  const navigationTheme = {
+    dark: isDarkMode,
+    colors: {
+      primary: currentTheme.colors.primary,
+      background: currentTheme.colors.background,
+      card: currentTheme.colors.surface,
+      text: currentTheme.colors.text,
+      border: currentTheme.colors.border,
+      notification: currentTheme.colors.danger,
+    },
+    fonts: {
+      regular: {
+        fontFamily: Platform.select({
+          ios: 'System',
+          android: 'Roboto',
+          default: 'System-ui',
+        }),
+        fontWeight: 'normal',
+      },
+      medium: {
+        fontFamily: Platform.select({
+          ios: 'System',
+          android: 'Roboto',
+          default: 'System-ui',
+        }),
+        fontWeight: '500',
+      },
+      bold: {
+        fontFamily: Platform.select({
+          ios: 'System',
+          android: 'Roboto',
+          default: 'System-ui',
+        }),
+        fontWeight: 'bold',
+      },
+      heavy: {
+        fontFamily: Platform.select({
+          ios: 'System',
+          android: 'Roboto',
+          default: 'System-ui',
+        }),
+        fontWeight: '900',
+      },
+    }
+  } as const;
+
+
+
+  return (
+    <NavigationContainer theme={navigationTheme}>
+      {isLoading ? (
+        <SplashScreen />
+      ) : (
+        <Stack.Navigator 
+          screenOptions={{ headerShown: false }}
+          initialRouteName="Login"
+        >
+          <Stack.Screen 
+          name="Login" 
+          component={LoginScreen}
+          />
+          <Stack.Screen 
+          name="Signup" 
+          component={SignupScreen}
+          />
+          <Stack.Screen 
+          name="MainApp" 
+          component={AppTabs}
+          />
+        </Stack.Navigator>
+      )}
+    </NavigationContainer>
+  );
+
+};
+
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+      <WaterGoalProvider>
+        <AchievementProvider>
+        <LeaderboardProvider>
+          <AppNavigator />
+        </LeaderboardProvider>
+        </AchievementProvider>
+      </WaterGoalProvider>
+      </LanguageProvider>
+    </ThemeProvider>
+
+  );
+}
+
