@@ -35,6 +35,12 @@ export const homeStyles = StyleSheet.create({
 		paddingHorizontal: 16,
 	} as ViewStyle,
 
+	headerButtons: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 10,
+	} as ViewStyle,
+
 	profileImage: {
 		width: 32,
 		height: 32,
@@ -161,5 +167,58 @@ export const homeStyles = StyleSheet.create({
 		padding: 15,
 		fontSize: 16,
 		marginBottom: 10,
+	} as TextStyle,
+
+	quoteContainer: {
+		padding: 16,
+		marginVertical: 16,
+		borderRadius: 12,
+		backgroundColor: 'transparent',
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.05,
+		shadowRadius: 3,
+		elevation: 2,
+		marginHorizontal: 8,
+		transform: [{ scale: 1 }],
+	} as ViewStyle,
+
+	quoteHeader: {
+		flexDirection: 'row',
+		alignItems: 'flex-start',
+		gap: 12,
+		paddingVertical: 4,
+	} as ViewStyle,
+
+	quoteHint: {
+		fontSize: 12,
+		color: '#999',
+		textAlign: 'center',
+		marginTop: 4,
+	} as TextStyle,
+
+	quoteAvatar: {
+		width: 44,
+		height: 44,
+		borderRadius: 22,
+		marginTop: 2,
+	} as ImageStyle,
+
+	quoteContent: {
+		flex: 1,
+		paddingRight: 4,
+	} as ViewStyle,
+
+	quoteText: {
+		fontSize: 15,
+		fontStyle: 'italic',
+		marginBottom: 6,
+		lineHeight: 22,
+	} as TextStyle,
+
+	quoteAuthor: {
+		fontSize: 14,
+		fontWeight: '600',
+		marginTop: 2,
 	} as TextStyle
 });

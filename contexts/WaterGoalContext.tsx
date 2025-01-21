@@ -196,7 +196,7 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	const resetProgress = async () => {
 		try {
 			const keys = getStorageKeys();
-			// Remove all data except daily goal
+			// Remove all data except daily goal and don't reset user score
 			const keysToRemove = [
 				keys.streak,
 				keys.bestStreak,
@@ -204,7 +204,7 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			];
 			await AsyncStorage.multiRemove(keysToRemove);
 
-			// Reset all state
+			// Reset all state except total score
 			setStreak(0);
 			setBestStreak(0);
 			
@@ -224,16 +224,12 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			setDailyData(freshData);
 			setTodayIntake(0);
 
-			// Reset user's total score if user is logged in
-			if (currentUser) {
-				await updateUserScore(currentUser.username, 0);
-			}
-
 		} catch (error) {
 			console.error('Error resetting progress:', error);
 			throw error;
 		}
 	};
+
 
 
 
@@ -262,6 +258,9 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					timeLog: [newLog]
 				});
 			}
+
+			// Calculate total intake including the new amount
+			const totalIntake = updatedData.reduce((sum, day) => sum + day.intake, 0);
 			
 			// Only increment streak when completing daily goal for the first time today
 			if (newIntake >= dailyGoal && todayIntake < dailyGoal) {
@@ -275,12 +274,9 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 				}
 			}
 			
-			// Calculate total water intake from all time
+			// Update user's total score with the calculated total
 			if (currentUser) {
-				// Calculate total from all historical data including today's new amount
-				const totalIntake = updatedData.reduce((sum, day) => sum + day.intake, 0);
-				// Update the user's total score with the complete total
-				updateUserScore(currentUser.username, totalIntake);
+				await updateUserScore(currentUser.username, totalIntake);
 			}
 
 			await AsyncStorage.setItem(keys.dailyData, JSON.stringify(updatedData));
@@ -291,6 +287,7 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			throw error;
 		}
 	};
+
 
 
 

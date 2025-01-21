@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Switch, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { settingsStyles } from '../styles/settingsStyles';
+import { NotificationService } from '../services/NotificationService';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
@@ -82,6 +83,22 @@ export default function SettingsScreen({ navigation }: Props) {
         await updateDailyGoal(goalInML);
       }
 
+        // Handle notifications
+        if (remindersEnabled) {
+        const hasPermission = await NotificationService.requestPermissions();
+        if (hasPermission) {
+          const frequency = parseInt(reminderFrequency);
+          await NotificationService.scheduleHydrationReminders(frequency);
+          await NotificationService.scheduleGoalReminder();
+        } else {
+          Alert.alert(t('error'), t('Notification permissions not granted'));
+          setRemindersEnabled(false);
+        }
+        } else {
+        await NotificationService.cancelAllReminders();
+        }
+
+
       // Save other settings
       const settings = {
         unit,
@@ -102,6 +119,18 @@ export default function SettingsScreen({ navigation }: Props) {
       Alert.alert(t('error'), t('settings.settingsSaveError'));
     }
   };
+
+  useEffect(() => {
+    const checkNotificationPermissions = async () => {
+      const hasPermission = await NotificationService.requestPermissions();
+      if (!hasPermission) {
+      Alert.alert(t('error'), t('Notification permissions not granted'));
+      setRemindersEnabled(false);
+      }
+    };
+    checkNotificationPermissions();
+
+  }, []);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -165,10 +194,11 @@ export default function SettingsScreen({ navigation }: Props) {
                 style: 'destructive',
                 onPress: async () => {
                     try {
-                        await resetProgress();
-                        resetAchievements();
-                        
-                        // Reset user stats
+                        await NotificationService.cancelAllReminders();
+                      await resetProgress();
+                      resetAchievements();
+                      
+                      // Reset user stats
                         if (currentUser) {
                             await resetUserStats(currentUser.username);
                         }

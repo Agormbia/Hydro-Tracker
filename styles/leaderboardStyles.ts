@@ -64,8 +64,9 @@ export const leaderboardStyles = StyleSheet.create({
 		height: 50,
 		borderRadius: 25,
 		borderWidth: 2,
-		borderColor: '#E0E0E0', // Light grey border
+		borderColor: '#E0E0E0',
 	},
+
 	placeholderAvatar: {
 		width: 50,
 		height: 50,
@@ -91,16 +92,18 @@ export const leaderboardStyles = StyleSheet.create({
 	statsContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
+		gap: 12,
 	},
-	score: {
+	statItem: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 4,
+	},
+	stat: {
 		fontSize: 14,
-		marginRight: 12,
-		marginLeft: 4,
+		fontWeight: '500',
 	},
-	streak: {
-		fontSize: 14,
-		marginLeft: 4,
-	},
+
 	sortContainer: {
 		flexDirection: 'row',
 		justifyContent: 'space-around',
@@ -118,9 +121,5 @@ export const leaderboardStyles = StyleSheet.create({
 		fontSize: 14,
 		fontWeight: '600',
 	},
-	achievements: {
-		fontSize: 14,
-		marginLeft: 4,
-		marginRight: 12,
-	},
 });
+

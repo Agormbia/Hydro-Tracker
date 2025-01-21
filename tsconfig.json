@@ -20,17 +20,16 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
-      "*": [
-        "node_modules/*"
-      ]
-    },
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ]
+      "*": ["node_modules/*"]
+    }
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.spec.tsx",
+    "**/*.test.tsx",
+    "jest.config.js"
   ],
   "include": [
     "**/*.ts",
@@ -38,3 +37,4 @@
   ],
   "extends": "expo/tsconfig.base"
 }
+

@@ -88,10 +88,20 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	};
 
 	const updateUserScore = async (username: string, newScore: number) => {
-		const updatedUsers = users.map(user => 
-			user.username === username ? { ...user, score: newScore } : user
-		);
-		await saveUsers(updatedUsers);
+		try {
+			const updatedUsers = users.map(user => 
+				user.username === username ? { ...user, score: newScore } : user
+			);
+			await saveUsers(updatedUsers);
+			
+			// Update currentUser if it's the same user
+			if (currentUser?.username === username) {
+				setCurrentUser({ ...currentUser, score: newScore });
+			}
+		} catch (error) {
+			console.error('Error updating user score:', error);
+			throw error;
+		}
 	};
 
 	const updateUserAvatar = async (username: string, avatarData: string) => {
