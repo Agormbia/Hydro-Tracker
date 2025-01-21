@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import { statisticsStyles } from '../styles/statisticsStyles';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -27,7 +27,7 @@ interface TimeDistribution {
 const StatisticsScreen: React.FC = () => {
 	const { isDarkMode } = useTheme();
 	const { t } = useLanguage();
-	const { achievements } = useAchievements();
+	const { achievements, resetAchievements } = useAchievements();
 	const { dailyData: contextDailyData, bestStreak: contextBestStreak, resetProgress } = useWaterGoal();
 	const currentTheme = isDarkMode ? darkTheme : lightTheme;
 	const screenWidth = Dimensions.get('window').width;
@@ -260,12 +260,30 @@ const StatisticsScreen: React.FC = () => {
 
 			<TouchableOpacity 
 				style={[statisticsStyles.resetButton, { backgroundColor: currentTheme.colors.danger }]}
-				onPress={async () => {
-					try {
-						await resetProgress();
-					} catch (error) {
-						console.error('Error resetting progress:', error);
-					}
+				onPress={() => {
+					Alert.alert(
+						t('resetConfirmTitle'),
+						t('resetConfirmMessage'),
+						[
+							{
+								text: t('cancel'),
+								style: 'cancel'
+							},
+							{
+								text: t('confirm'),
+								style: 'destructive',
+								onPress: async () => {
+									try {
+										await resetProgress();
+										await resetAchievements();
+										loadStatistics();
+									} catch (error) {
+										console.error('Error resetting progress:', error);
+									}
+								}
+							}
+						]
+					);
 				}}
 			>
 				<Text style={statisticsStyles.resetButtonText}>{t('resetProgress')}</Text>

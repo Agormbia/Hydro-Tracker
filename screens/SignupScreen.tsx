@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
+
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 import { signupStyles } from '../styles/signupStyles';
 
 const SignupScreen = ({ navigation }: any) => {
@@ -8,14 +10,25 @@ const SignupScreen = ({ navigation }: any) => {
 	const [username, setUsername] = useState('');
 	const { theme } = useTheme();
 
+	const { registerUser } = useUser();
 
 	const handleSignup = async () => {
-		try {
-			navigation.navigate('MainApp');
-		} catch (error) {
-			console.error('Signup error:', error);
+		if (!username || !password) {
+			Alert.alert('Error', 'Please fill in all fields');
+			return;
+		}
+
+		const result = await registerUser(username, password);
+		if (result.success) {
+			navigation.reset({
+				index: 0,
+				routes: [{ name: 'MainApp' }],
+			});
+		} else {
+			Alert.alert('Error', result.message);
 		}
 	};
+
 
 	return (
 		<View style={[signupStyles.container, { backgroundColor: theme.colors.background }]}>
@@ -45,6 +58,8 @@ const SignupScreen = ({ navigation }: any) => {
 				onChangeText={setPassword}
 				secureTextEntry
 			/>
+
+
 			<TouchableOpacity 
 				style={[signupStyles.button, { backgroundColor: theme.colors.primary }]} 
 				onPress={handleSignup}

@@ -69,12 +69,10 @@ const translations: Translations = {
 
 
 		// Water Intake Guide Screen
-		name: 'Name',
 		gender: 'Gender',
 		weight: 'Weight (kg)',
 		activityLevel: 'Activity Level',
 		temperature: 'Temperature',
-		enterName: 'Enter your name',
 		enterWeight: 'Enter your weight in kg',
 		calculateWaterIntake: 'Calculate Water Intake',
 		male: 'Male',
@@ -85,7 +83,8 @@ const translations: Translations = {
 		invalidWeight: 'Invalid weight',
 		enterValidWeight: 'Please enter a valid weight.',
 		dailyWaterIntakeGoal: 'Daily Water Intake Goal',
-		recommendedIntake: 'Hello ${name}!\n\nYour recommended daily water intake is approximately ${mlIntake} mL.\n\nBased on:\n- Weight: ${weight} kg\n- Activity: ${activityLevel}\n- Temperature: ${temperature}\n- Gender: ${gender}',
+		recommendedIntake: 'Your recommended daily water intake is approximately ${mlIntake} mL.\n\nBased on:\n- Weight: ${weight} kg\n- Activity: ${activityLevel}\n- Temperature: ${temperature}\n- Gender: ${gender}',
+
 		lightActivity: 'Light',
 		moderate: 'Moderate',
 		heavy: 'Heavy',
@@ -155,7 +154,9 @@ const translations: Translations = {
 		reset: 'Reset',
 		success: 'Success',
 		error: 'Error',
-		dataResetSuccess: 'All data has been reset successfully',
+		resetData: 'Reset All Data',
+		resetDataConfirm: 'Are you sure you want to reset all data? This will reset your achievements, water intake history, settings, and all other app data. This action cannot be undone.',
+		dataResetSuccess: 'All app data has been reset successfully',
 		dataResetError: 'Failed to reset data. Please try again.',
 
 		// Leaderboard
@@ -173,8 +174,12 @@ const translations: Translations = {
 		totalAchievements: 'Total Achievements',
 		totalPoints: 'Total Points',
 		points: 'pts',
-		
 
+		// Leaderboard Reset
+		resetLeaderboard: 'Reset Leaderboard',
+		resetLeaderboardConfirm: 'Are you sure you want to reset all leaderboard data? This will reset all users\' water intake totals. This action cannot be undone.',
+		leaderboardResetSuccess: 'Leaderboard has been reset successfully',
+		leaderboardResetError: 'Failed to reset leaderboard. Please try again.',
 
 		setAsGoal: 'Set as Daily Goal',
 		goalSetSuccess: 'Daily goal updated successfully',
@@ -243,7 +248,10 @@ const translations: Translations = {
 			motivational: 'Motivational',
 			energetic: 'Energetic',
 			settingsSaved: 'Settings saved successfully',
-			settingsSaveError: 'Failed to save settings'
+			settingsSaveError: 'Failed to save settings',
+			delete: 'Delete',
+			deleteAccountConfirm: 'Are you sure you want to delete your account? This action cannot be undone.',
+			deleteAccountError: 'Failed to delete account. Please try again.'
 		},
 
 
@@ -311,12 +319,10 @@ const translations: Translations = {
 
 
 		// Water Intake Guide Screen
-		name: 'Nombre',
 		gender: 'Género',
 		weight: 'Peso (kg)',
 		activityLevel: 'Nivel de Actividad',
 		temperature: 'Temperatura',
-		enterName: 'Ingrese su nombre',
 		enterWeight: 'Ingrese su peso en kg',
 		calculateWaterIntake: 'Calcular Consumo de Agua',
 		male: 'Masculino',
@@ -327,7 +333,8 @@ const translations: Translations = {
 		invalidWeight: 'Peso inválido',
 		enterValidWeight: 'Por favor ingrese un peso válido.',
 		dailyWaterIntakeGoal: 'Objetivo Diario de Consumo de Agua',
-		recommendedIntake: '¡Hola ${name}!\n\nSu consumo diario recomendado de agua es aproximadamente ${mlIntake} mL.\n\nBasado en:\n- Peso: ${weight} kg\n- Actividad: ${activityLevel}\n- Temperatura: ${temperature}\n- Género: ${gender}',
+		recommendedIntake: 'Su consumo diario recomendado de agua es aproximadamente ${mlIntake} mL.\n\nBasado en:\n- Peso: ${weight} kg\n- Actividad: ${activityLevel}\n- Temperatura: ${temperature}\n- Género: ${gender}',
+
 		lightActivity: 'Ligero',
 		moderate: 'Moderado',
 		heavy: 'Intenso',
@@ -397,7 +404,9 @@ const translations: Translations = {
 		reset: 'Restablecer',
 		success: 'Éxito',
 		error: 'Error',
-		dataResetSuccess: 'Todos los datos se han restablecido correctamente',
+		resetData: 'Restablecer Todos los Datos',
+		resetDataConfirm: '¿Está seguro de que desea restablecer todos los datos? Esto restablecerá sus logros, historial de consumo de agua, configuración y todos los demás datos de la aplicación. Esta acción no se puede deshacer.',
+		dataResetSuccess: 'Todos los datos de la aplicación se han restablecido correctamente',
 		dataResetError: 'Error al restablecer los datos. Por favor, inténtelo de nuevo.',
 
 		// Leaderboard
@@ -415,8 +424,12 @@ const translations: Translations = {
 		totalAchievements: 'Logros Totales',
 		totalPoints: 'Puntos Totales',
 		points: 'pts',
-		
 
+		// Leaderboard Reset
+		resetLeaderboard: 'Restablecer Tabla de Clasificación',
+		resetLeaderboardConfirm: '¿Está seguro de que desea restablecer todos los datos de la tabla de clasificación? Esto restablecerá los totales de consumo de agua de todos los usuarios. Esta acción no se puede deshacer.',
+		leaderboardResetSuccess: 'La tabla de clasificación se ha restablecido correctamente',
+		leaderboardResetError: 'Error al restablecer la tabla de clasificación. Por favor, inténtelo de nuevo.',
 
 		setAsGoal: 'Establecer como Meta Diaria',
 		goalSetSuccess: 'Meta diaria actualizada con éxito',
@@ -485,7 +498,10 @@ const translations: Translations = {
 			motivational: 'Motivador',
 			energetic: 'Enérgico',
 			settingsSaved: 'Configuración guardada exitosamente',
-			settingsSaveError: 'Error al guardar la configuración'
+			settingsSaveError: 'Error al guardar la configuración',
+			delete: 'Eliminar',
+			deleteAccountConfirm: '¿Está seguro de que desea eliminar su cuenta? Esta acción no se puede deshacer.',
+			deleteAccountError: 'Error al eliminar la cuenta. Por favor, inténtelo de nuevo.'
 		},
 
 
@@ -554,12 +570,10 @@ const translations: Translations = {
 
 
 		// Water Intake Guide Screen
-		name: 'Nom',
 		gender: 'Genre',
 		weight: 'Poids (kg)',
 		activityLevel: 'Niveau d\'Activité',
 		temperature: 'Température',
-		enterName: 'Entrez votre nom',
 		enterWeight: 'Entrez votre poids en kg',
 		calculateWaterIntake: 'Calculer la Consommation d\'Eau',
 		male: 'Homme',
@@ -570,7 +584,8 @@ const translations: Translations = {
 		invalidWeight: 'Poids invalide',
 		enterValidWeight: 'Veuillez entrer un poids valide.',
 		dailyWaterIntakeGoal: 'Objectif Quotidien de Consommation d\'Eau',
-		recommendedIntake: 'Bonjour ${name}!\n\nVotre consommation quotidienne d\'eau recommandée est d\'environ ${mlIntake} mL.\n\nBasé sur:\n- Poids: ${weight} kg\n- Activité: ${activityLevel}\n- Température: ${temperature}\n- Genre: ${gender}',
+		recommendedIntake: 'Votre consommation quotidienne d\'eau recommandée est d\'environ ${mlIntake} mL.\n\nBasé sur:\n- Poids: ${weight} kg\n- Activité: ${activityLevel}\n- Température: ${temperature}\n- Genre: ${gender}',
+
 		lightActivity: 'Léger',
 		moderate: 'Modéré',
 		heavy: 'Intense',
@@ -640,7 +655,9 @@ const translations: Translations = {
 		reset: 'Réinitialiser',
 		success: 'Succès',
 		error: 'Erreur',
-		dataResetSuccess: 'Toutes les données ont été réinitialisées avec succès',
+		resetData: 'Réinitialiser Toutes les Données',
+		resetDataConfirm: 'Êtes-vous sûr de vouloir réinitialiser toutes les données ? Cela réinitialisera vos réalisations, l\'historique de consommation d\'eau, les paramètres et toutes les autres données de l\'application. Cette action ne peut pas être annulée.',
+		dataResetSuccess: 'Toutes les données de l\'application ont été réinitialisées avec succès',
 		dataResetError: 'Échec de la réinitialisation des données. Veuillez réessayer.',
 
 		// Leaderboard
@@ -658,8 +675,12 @@ const translations: Translations = {
 		totalAchievements: 'Réalisations Totales',
 		totalPoints: 'Points Totaux',
 		points: 'pts',
-		
 
+		// Leaderboard Reset
+		resetLeaderboard: 'Réinitialiser le Classement',
+		resetLeaderboardConfirm: 'Êtes-vous sûr de vouloir réinitialiser toutes les données du classement ? Cela réinitialisera les totaux de consommation d\'eau de tous les utilisateurs. Cette action ne peut pas être annulée.',
+		leaderboardResetSuccess: 'Le classement a été réinitialisé avec succès',
+		leaderboardResetError: 'Échec de la réinitialisation du classement. Veuillez réessayer.',
 
 		setAsGoal: 'Définir comme Objectif Quotidien',
 		goalSetSuccess: 'Objectif quotidien mis à jour avec succès',
@@ -728,7 +749,10 @@ const translations: Translations = {
 			motivational: 'Motivant',
 			energetic: 'Énergique',
 			settingsSaved: 'Paramètres enregistrés avec succès',
-			settingsSaveError: 'Échec de l\'enregistrement des paramètres'
+			settingsSaveError: 'Échec de l\'enregistrement des paramètres',
+			delete: 'Supprimer',
+			deleteAccountConfirm: 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action ne peut pas être annulée.',
+			deleteAccountError: 'Échec de la suppression du compte. Veuillez réessayer.'
 		},
 
 

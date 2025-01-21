@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { useWaterGoal } from '../contexts/WaterGoalContext';
+import { useUser } from '../contexts/UserContext';
 
 interface ProfilePanelProps {
 	visible: boolean;
@@ -14,6 +14,7 @@ interface ProfilePanelProps {
 
 const ProfilePanel = ({ visible, onClose, theme, onUpdate }: ProfilePanelProps) => {
 	const { dailyData, streak } = useWaterGoal();
+	const { currentUser, updateUserAvatar } = useUser();
 	const [name, setName] = useState('');
 	const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/150?img=1');
 
@@ -21,23 +22,17 @@ const ProfilePanel = ({ visible, onClose, theme, onUpdate }: ProfilePanelProps) 
 	const totalWaterIntake = dailyData.reduce((total, day) => total + day.intake, 0);
 
 	useEffect(() => {
-		const loadProfile = async () => {
-			try {
-				const savedName = await AsyncStorage.getItem('userName');
-				const savedAvatar = await AsyncStorage.getItem('userAvatar');
-				if (savedName) setName(savedName);
-				if (savedAvatar) setAvatarUrl(savedAvatar);
-			} catch (error) {
-				console.error('Error loading profile:', error);
-			}
-		};
-		loadProfile();
-	}, []);
-
+		if (currentUser) {
+			setName(currentUser.username);
+			setAvatarUrl(currentUser.avatar);
+		}
+	}, [currentUser]);
 
 	const handleSave = async () => {
 		try {
-			await AsyncStorage.setItem('userAvatar', avatarUrl);
+			if (currentUser) {
+				await updateUserAvatar(currentUser.username, avatarUrl);
+			}
 			if (onUpdate) {
 				onUpdate(name, avatarUrl);
 			}
@@ -46,6 +41,8 @@ const ProfilePanel = ({ visible, onClose, theme, onUpdate }: ProfilePanelProps) 
 			console.error('Error saving profile:', error);
 		}
 	};
+
+
 
 
 	return (
@@ -181,6 +178,8 @@ const styles = StyleSheet.create({
 		height: 100,
 		borderRadius: 50,
 		marginBottom: 10,
+		borderWidth: 2,
+		borderColor: '#E0E0E0', // Light grey border
 	},
 	changeButton: {
 		paddingHorizontal: 20,

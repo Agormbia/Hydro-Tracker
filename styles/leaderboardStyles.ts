@@ -7,12 +7,23 @@ export const leaderboardStyles = StyleSheet.create({
 		flex: 1,
 		paddingTop: 50,
 	},
+	emptyState: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingHorizontal: 20,
+	},
+	emptyText: {
+		fontSize: 16,
+		textAlign: 'center',
+		opacity: 0.7,
+	},
 	header: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		justifyContent: 'center',
+		justifyContent: 'space-between',
 		paddingHorizontal: 16,
-		marginBottom: 20,
+		paddingVertical: 12,
 	},
 	title: {
 		fontSize: 28,
@@ -45,11 +56,29 @@ export const leaderboardStyles = StyleSheet.create({
 		marginRight: 8,
 		minWidth: 24,
 	},
+	avatarContainer: {
+		marginRight: 12,
+	},
 	avatar: {
 		width: 50,
 		height: 50,
 		borderRadius: 25,
-		marginRight: 16,
+		borderWidth: 2,
+		borderColor: '#E0E0E0', // Light grey border
+	},
+	placeholderAvatar: {
+		width: 50,
+		height: 50,
+		borderRadius: 25,
+		borderWidth: 2,
+		borderColor: '#E0E0E0', // Light grey border
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	placeholderText: {
+		color: 'white',
+		fontSize: 20,
+		fontWeight: 'bold',
 	},
 	userInfo: {
 		flex: 1,
@@ -71,5 +100,27 @@ export const leaderboardStyles = StyleSheet.create({
 	streak: {
 		fontSize: 14,
 		marginLeft: 4,
-	}
+	},
+	sortContainer: {
+		flexDirection: 'row',
+		justifyContent: 'space-around',
+		paddingHorizontal: 16,
+		marginBottom: 16,
+	},
+	sortButton: {
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+		borderRadius: 20,
+		borderWidth: 1,
+		borderColor: '#E0E0E0',
+	},
+	sortButtonText: {
+		fontSize: 14,
+		fontWeight: '600',
+	},
+	achievements: {
+		fontSize: 14,
+		marginLeft: 4,
+		marginRight: 12,
+	},
 });

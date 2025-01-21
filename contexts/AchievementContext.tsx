@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useLanguage } from './LanguageContext';
+import { useUser } from './UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
@@ -15,22 +16,24 @@ export interface Achievement {
 
 interface AchievementContextType {
 	achievements: Achievement[];
-	unlockAchievement: (id: number) => void;
-	checkFirstSip: (waterDrank: number) => void;
-	checkDailyGoal: (waterDrank: number, goal: number) => void;
-	checkStreak: (streak: number) => void;
-	checkWeekendWarrior: (date: Date) => void;
-	checkVolumeAchievements: (dailyVolume: number, totalVolume: number) => void;
-	checkMorningHydrator: (consecutiveDays: number) => void;
-	checkNightOwl: (consecutiveDays: number) => void;
-	checkAllDayHydrator: (morningLog: boolean, afternoonLog: boolean, eveningLog: boolean) => void;
-	checkHydrationChallenge: (completedDays: number) => void;
-	checkHolidayHydrator: (isHoliday: boolean) => void;
-	checkSeasonalSipper: (consecutiveDays: number) => void;
-	checkBadgeCollector: () => void;
-	checkPerfectMonth: (consecutiveDays: number) => void;
-	checkGoalSmasher: (exceededDays: number) => void;
+	unlockAchievement: (id: number) => Promise<void>;
+	checkFirstSip: (waterDrank: number) => Promise<void>;
+	checkDailyGoal: (waterDrank: number, goal: number) => Promise<void>;
+	checkStreak: (streak: number) => Promise<void>;
+	checkWeekendWarrior: (date: Date) => Promise<void>;
+	checkVolumeAchievements: (dailyVolume: number, totalVolume: number) => Promise<void>;
+	checkMorningHydrator: (consecutiveDays: number) => Promise<void>;
+	checkNightOwl: (consecutiveDays: number) => Promise<void>;
+	checkAllDayHydrator: (morningLog: boolean, afternoonLog: boolean, eveningLog: boolean) => Promise<void>;
+	checkHydrationChallenge: (completedDays: number) => Promise<void>;
+	checkHolidayHydrator: (isHoliday: boolean) => Promise<void>;
+	checkSeasonalSipper: (consecutiveDays: number) => Promise<void>;
+	checkBadgeCollector: () => Promise<void>;
+	checkPerfectMonth: (consecutiveDays: number) => Promise<void>;
+	checkGoalSmasher: (exceededDays: number) => Promise<void>;
 	resetAchievements: () => void;
+	onAchievementUnlock?: (title: string, icon: string) => void;
+	setOnAchievementUnlock: (callback: (title: string, icon: string) => void) => void;
 }
 
 const AchievementContext = createContext<AchievementContextType | undefined>(undefined);
@@ -226,17 +229,25 @@ export const initialAchievements = [
 
 export const AchievementProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [achievements, setAchievements] = useState<Achievement[]>(initialAchievements);
+	const [onUnlockCallback, setOnUnlockCallback] = useState<((title: string, icon: string) => void) | undefined>(undefined);
 	const { t } = useLanguage();
+	const { currentUser, updateUserAchievements } = useUser();
 
-	useEffect(() => {
-		console.log('Initial achievements on mount:', initialAchievements.map(a => a.title));
-		loadAchievements();
+	const setOnAchievementUnlock = React.useCallback((callback: (title: string, icon: string) => void) => {
+		setOnUnlockCallback(() => callback);
 	}, []);
+
+	const getStorageKey = () => {
+		return currentUser ? `achievements_${currentUser.username}` : null;
+	};
 
 	const clearAchievementsStorage = async () => {
 		try {
-			await AsyncStorage.removeItem('achievements');
-			console.log('Cleared achievements storage');
+			const storageKey = getStorageKey();
+			if (storageKey) {
+				await AsyncStorage.removeItem(storageKey);
+				console.log('Cleared achievements storage for user:', currentUser?.username);
+			}
 			setAchievements(initialAchievements);
 		} catch (error) {
 			console.error('Error clearing achievements:', error);
@@ -245,8 +256,16 @@ export const AchievementProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
 	const loadAchievements = async () => {
 		try {
-			const savedAchievements = await AsyncStorage.getItem('achievements');
-			console.log('Loaded achievements from storage:', savedAchievements);
+			const storageKey = getStorageKey();
+			if (!storageKey) {
+				console.log('No user logged in, using initial achievements');
+				setAchievements(initialAchievements);
+				return;
+			}
+
+			const savedAchievements = await AsyncStorage.getItem(storageKey);
+			console.log('Loaded achievements from storage for user:', currentUser?.username);
+			
 			if (savedAchievements) {
 				try {
 					const parsed = JSON.parse(savedAchievements);
@@ -262,7 +281,7 @@ export const AchievementProvider: React.FC<{ children: React.ReactNode }> = ({ c
 					await clearAchievementsStorage();
 				}
 			} else {
-				console.log('No saved achievements found, using initial achievements:', initialAchievements);
+				console.log('No saved achievements found, using initial achievements');
 				setAchievements(initialAchievements);
 			}
 		} catch (error) {
@@ -273,14 +292,21 @@ export const AchievementProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
 	const saveAchievements = async (newAchievements: Achievement[]) => {
 		try {
-			console.log('Saving achievements:', newAchievements.map(a => a.title));
-			await AsyncStorage.setItem('achievements', JSON.stringify(newAchievements));
+			const storageKey = getStorageKey();
+			if (storageKey) {
+				console.log('Saving achievements for user:', currentUser?.username);
+				await AsyncStorage.setItem(storageKey, JSON.stringify(newAchievements));
+			}
 		} catch (error) {
 			console.error('Error saving achievements:', error);
 		}
 	};
 
-	const unlockAchievement = (id: number) => {
+	useEffect(() => {
+		loadAchievements();
+	}, [currentUser]);
+
+	const unlockAchievement = async (id: number) => {
 		console.log('Attempting to unlock achievement:', id);
 		const achievement = achievements.find(a => a.id === id);
 		if (achievement && !achievement.completed) {
@@ -288,118 +314,128 @@ export const AchievementProvider: React.FC<{ children: React.ReactNode }> = ({ c
 			const updatedAchievements = achievements.map(a =>
 				a.id === id ? { ...a, completed: true } : a
 			);
-			console.log('Updated achievements:', updatedAchievements.map(a => `${a.title}: ${a.completed}`));
 			setAchievements(updatedAchievements);
-			saveAchievements(updatedAchievements);
-		} else {
-			console.log('Achievement not found or already completed:', id);
+			await saveAchievements(updatedAchievements);
+			
+			if (currentUser) {
+				const completedCount = updatedAchievements.filter(a => a.completed).length;
+				await updateUserAchievements(currentUser.username, completedCount);
+				
+				// Use requestAnimationFrame to avoid render cycle issues
+				if (onUnlockCallback) {
+					requestAnimationFrame(() => {
+						onUnlockCallback(t(achievement.title), achievement.icon);
+					});
+				}
+			}
 		}
 	};
 
 
-	const checkFirstSip = (waterDrank: number) => {
+
+	const checkFirstSip = async (waterDrank: number) => {
 		if (waterDrank > 0) {
-			unlockAchievement(1); // First Sip
+			await unlockAchievement(1); // First Sip
 		}
 	};
 
-	const checkDailyGoal = (waterDrank: number, goal: number) => {
+	const checkDailyGoal = async (waterDrank: number, goal: number) => {
 		if (waterDrank >= goal) {
-			unlockAchievement(2); // Daily Drinker
+			await unlockAchievement(2); // Daily Drinker
 		}
 	};
 
-	const checkStreak = (streak: number) => {
+	const checkStreak = async (streak: number) => {
 		if (streak >= 3) {
-			unlockAchievement(3); // Hydration Starter
+			await unlockAchievement(3); // Hydration Starter
 		}
 		if (streak >= 7) {
-			unlockAchievement(4); // Weekly Warrior
+			await unlockAchievement(4); // Weekly Warrior
 		}
 		if (streak >= 14) {
-			unlockAchievement(5); // Thirst Crusher
+			await unlockAchievement(5); // Thirst Crusher
 		}
 		if (streak >= 30) {
-			unlockAchievement(6); // Hydration Streaker
+			await unlockAchievement(6); // Hydration Streaker
 		}
 	};
 
-	const checkWeekendWarrior = (date: Date) => {
+	const checkWeekendWarrior = async (date: Date) => {
 		const day = date.getDay();
 		if (day === 0 || day === 6) {
-			unlockAchievement(7); // Weekend Winner
+			await unlockAchievement(7); // Weekend Winner
 		}
 	};
 
-	const checkVolumeAchievements = (dailyVolume: number, totalVolume: number) => {
+	const checkVolumeAchievements = async (dailyVolume: number, totalVolume: number) => {
 		if (dailyVolume >= 1000) {
-			unlockAchievement(8); // 1-Liter Club
+			await unlockAchievement(8); // 1-Liter Club
 		}
 		if (totalVolume >= 10000) {
-			unlockAchievement(9); // Hydration Hero
+			await unlockAchievement(9); // Hydration Hero
 		}
 		if (totalVolume >= 100000) {
-			unlockAchievement(10); // Water Champion
+			await unlockAchievement(10); // Water Champion
 		}
 		if (totalVolume >= 1000000) {
-			unlockAchievement(11); // Ocean Overlord
+			await unlockAchievement(11); // Ocean Overlord
 		}
 	};
 
-	const checkMorningHydrator = (consecutiveDays: number) => {
+	const checkMorningHydrator = async (consecutiveDays: number) => {
 		if (consecutiveDays >= 7) {
-			unlockAchievement(12); // Morning Hydrator
+			await unlockAchievement(12); // Morning Hydrator
 		}
 	};
 
-	const checkNightOwl = (consecutiveDays: number) => {
+	const checkNightOwl = async (consecutiveDays: number) => {
 		if (consecutiveDays >= 7) {
-			unlockAchievement(13); // Night Owl
+			await unlockAchievement(13); // Night Owl
 		}
 	};
 
-	const checkAllDayHydrator = (morningLog: boolean, afternoonLog: boolean, eveningLog: boolean) => {
+	const checkAllDayHydrator = async (morningLog: boolean, afternoonLog: boolean, eveningLog: boolean) => {
 		if (morningLog && afternoonLog && eveningLog) {
-			unlockAchievement(14); // All-Day Hydrator
+			await unlockAchievement(14); // All-Day Hydrator
 		}
 	};
 
-	const checkHydrationChallenge = (completedDays: number) => {
+	const checkHydrationChallenge = async (completedDays: number) => {
 		if (completedDays >= 7) {
-			unlockAchievement(15); // Hydration Challenge Master
+			await unlockAchievement(15); // Hydration Challenge Master
 		}
 	};
 
-	const checkHolidayHydrator = (isHoliday: boolean) => {
+	const checkHolidayHydrator = async (isHoliday: boolean) => {
 		if (isHoliday) {
-			unlockAchievement(16); // Holiday Hydrator
+			await unlockAchievement(16); // Holiday Hydrator
 		}
 	};
 
-	const checkSeasonalSipper = (consecutiveDays: number) => {
+	const checkSeasonalSipper = async (consecutiveDays: number) => {
 		if (consecutiveDays >= 90) { // Approximately one season
-			unlockAchievement(17); // Seasonal Sipper
+			await unlockAchievement(17); // Seasonal Sipper
 		}
 	};
 
-	const checkBadgeCollector = () => {
+	const checkBadgeCollector = async () => {
 		const completedCategories = new Set(
 			achievements.filter(a => a.completed).map(a => a.category)
 		);
 		if (completedCategories.size >= 10) {
-			unlockAchievement(18); // Badge Collector
+			await unlockAchievement(18); // Badge Collector
 		}
 	};
 
-	const checkPerfectMonth = (consecutiveDays: number) => {
+	const checkPerfectMonth = async (consecutiveDays: number) => {
 		if (consecutiveDays >= 30) {
-			unlockAchievement(19); // Perfect Month
+			await unlockAchievement(19); // Perfect Month
 		}
 	};
 
-	const checkGoalSmasher = (exceededDays: number) => {
+	const checkGoalSmasher = async (exceededDays: number) => {
 		if (exceededDays >= 7) {
-			unlockAchievement(20); // Goal Smasher
+			await unlockAchievement(20); // Goal Smasher
 		}
 	};
 
@@ -428,6 +464,7 @@ export const AchievementProvider: React.FC<{ children: React.ReactNode }> = ({ c
 			checkPerfectMonth,
 			checkGoalSmasher,
 			resetAchievements,
+			setOnAchievementUnlock,
 		}}>
 			{children}
 		</AchievementContext.Provider>

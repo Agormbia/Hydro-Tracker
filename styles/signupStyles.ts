@@ -31,4 +31,24 @@ export const signupStyles = StyleSheet.create({
 	linkText: {
 		textAlign: 'center',
 	},
+	rememberMeContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginBottom: 20,
+		width: '100%',
+		paddingHorizontal: 20,
+	},
+	rememberMeText: {
+		marginLeft: 8,
+		fontSize: 16,
+	},
+	checkbox: {
+		width: 24,
+		height: 24,
+		borderWidth: 2,
+		borderRadius: 4,
+		marginRight: 8,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
 });

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Switch, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { settingsStyles } from '../styles/settingsStyles';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useWaterGoal } from '../contexts/WaterGoalContext';
 import { useAchievements } from '../contexts/AchievementContext';
+import { useUser } from '../contexts/UserContext';
 import { lightTheme, darkTheme } from '../styles/theme';
 import { Picker } from '@react-native-picker/picker';
 
@@ -31,6 +33,7 @@ const convertToML = (value: number, fromUnit: string): number => {
 export default function SettingsScreen({ navigation }: Props) {
   const { isDarkMode, setTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
+  const { currentUser, logoutUser: contextLogoutUser, deleteUser, resetUserStats } = useUser();
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
   const { dailyGoal, updateDailyGoal, resetProgress } = useWaterGoal();
   const { resetAchievements } = useAchievements();
@@ -93,9 +96,10 @@ export default function SettingsScreen({ navigation }: Props) {
       };
       await AsyncStorage.setItem('userSettings', JSON.stringify(settings));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert(t('success'), t('settings.changesSaved')); // Add success alert
     } catch (error) {
       console.error('Error saving settings:', error);
-        Alert.alert(t('error'), t('settings.settingsSaveError'));
+      Alert.alert(t('error'), t('settings.settingsSaveError'));
     }
   };
 
@@ -152,41 +156,78 @@ export default function SettingsScreen({ navigation }: Props) {
 
   const handleResetData = async () => {
     Alert.alert(
-      t('reset Data'),
-      t('reset Data Confirm'),
-      [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('reset'),
-          style: 'destructive',
-            onPress: async () => {
-            try {
-              await resetProgress();
-              resetAchievements();
-              
-              // Reset all settings to defaults
-              setUnit('ml');
-              setReminderFrequency('1');
-              setNotificationSound('default');
-              setHapticFeedback(true);
-              setSyncHealthApp(false);
-              setExportFormat('csv');
-              setLanguageEnabled(true);
-              setExportEnabled(false);
-              setRemindersEnabled(true);
-              
-              setGoalInput('2000');
-
-              
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              Alert.alert(t('success'), t('data Reset Success'));
-            } catch (error) {
-              console.error('Error resetting data:', error);
-              Alert.alert(t('error'), t('data Reset Error'));
+      t('resetData'),
+      t('resetDataConfirm'),
+        [
+            { text: t('cancel'), style: 'cancel' },
+            {
+                text: t('reset'),
+                style: 'destructive',
+                onPress: async () => {
+                    try {
+                        await resetProgress();
+                        resetAchievements();
+                        
+                        // Reset user stats
+                        if (currentUser) {
+                            await resetUserStats(currentUser.username);
+                        }
+                        
+                        // Reset all settings to defaults
+                        setUnit('ml');
+                        setReminderFrequency('1');
+                        setNotificationSound('default');
+                        setHapticFeedback(true);
+                        setSyncHealthApp(false);
+                        setExportFormat('csv');
+                        setLanguageEnabled(true);
+                        setExportEnabled(false);
+                        setRemindersEnabled(true);
+                        
+                        setGoalInput('2000');
+                        
+                        // Clear all stored settings
+                        await AsyncStorage.removeItem('userSettings');
+                        
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        Alert.alert(t('success'), t('data Reset Success'));
+                    } catch (error) {
+                        console.error('Error resetting data:', error);
+                        Alert.alert(t('error'), t('data Reset Error'));
+                    }
+                }
             }
-          }
-        }
-      ]
+        ]
+    );
+};
+
+
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+        t('settings.deleteAccount'),
+        t('settings.deleteAccountConfirm'),
+        [
+            { text: t('cancel'), style: 'cancel' },
+            {
+                text: t('settings.delete'),
+                style: 'destructive',
+                onPress: async () => {
+                    try {
+                        if (currentUser) {
+                            await deleteUser(currentUser.username);
+                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'Login' }],
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error deleting account:', error);
+                        Alert.alert(t('error'), t('settings.deleteAccountError'));
+                    }
+                }
+            }
+        ]
     );
   };
 
@@ -194,28 +235,28 @@ export default function SettingsScreen({ navigation }: Props) {
     Alert.alert(
         t('logout'),
         t('logout Confirm'),
-      [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('logout'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Clear stored settings
-              await AsyncStorage.removeItem('userSettings');
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              // Navigate to Login screen
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
-            } catch (error) {
-              console.error('Error during logout:', error);
-                Alert.alert(t('error'), t('logout Error'));
+        [
+            { text: t('cancel'), style: 'cancel' },
+            {
+                text: t('logout'),
+                style: 'destructive',
+                onPress: async () => {
+                    try {
+                        // Only remove user settings, keep rememberedUser data
+                        await AsyncStorage.removeItem('userSettings');
+                        contextLogoutUser();
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Login' }],
+                        });
+                    } catch (error) {
+                        console.error('Error during logout:', error);
+                        Alert.alert(t('error'), t('logout Error'));
+                    }
+                }
             }
-          }
-        }
-      ]
+        ]
     );
   };
 
@@ -299,7 +340,9 @@ export default function SettingsScreen({ navigation }: Props) {
         <View style={[settingsStyles.card, { backgroundColor: currentTheme.colors.surface }]}>
         <Text style={[settingsStyles.cardTitle, { color: currentTheme.colors.text }]}>{t('settings.appearance')}</Text>
         <Text style={[settingsStyles.cardDescription, { color: currentTheme.colors.textSecondary }]}>{t('settings.customizeExperience')}</Text>
+        
         <View style={settingsStyles.row}>
+
             <Text style={{ color: currentTheme.colors.text }}>{t('Dark Mode')}</Text>
           <Switch
           value={isDarkMode}
@@ -381,27 +424,37 @@ export default function SettingsScreen({ navigation }: Props) {
         )}
         <View style={settingsStyles.buttonRow}>
           <TouchableOpacity 
-            style={[settingsStyles.buttonDanger, { 
-            backgroundColor: currentTheme.colors.danger,
-            flex: 1,
-            marginRight: 8,
+          style={[settingsStyles.buttonDanger, { 
+          backgroundColor: currentTheme.colors.danger,
+          flex: 1,
+          marginRight: 8,
           }]} 
           onPress={handleResetData}
           >
-            <Text style={[settingsStyles.buttonText, { color: '#fff' }]}>{t('Reset Data')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-            style={[settingsStyles.buttonOutline, { 
-            borderColor: currentTheme.colors.primary,
-            backgroundColor: 'transparent',
-            flex: 1,
-            marginLeft: 8,
+            <Text style={[settingsStyles.buttonText, { color: '#fff' }]}>{t('resetData')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+          style={[settingsStyles.buttonDanger, { 
+          backgroundColor: currentTheme.colors.danger,
+          flex: 1,
+          marginLeft: 8,
           }]} 
-          onPress={handleLogout}
+          onPress={handleDeleteAccount}
           >
-            <Text style={[settingsStyles.buttonOutlineText, { color: currentTheme.colors.primary }]}>{t('logout')}</Text>
+          <Text style={[settingsStyles.buttonText, { color: '#fff' }]}>{t('settings.deleteAccount')}</Text>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity 
+          style={[settingsStyles.buttonOutline, { 
+          borderColor: currentTheme.colors.primary,
+          backgroundColor: 'transparent',
+          width: '100%',
+          marginTop: 8,
+        }]} 
+        onPress={handleLogout}
+        >
+          <Text style={[settingsStyles.buttonOutlineText, { color: currentTheme.colors.primary }]}>{t('logout')}</Text>
+        </TouchableOpacity>
         </View>
 
         <TouchableOpacity 

@@ -16,8 +16,8 @@ const WaterIntakeGuideScreen = () => {
     const { t } = useLanguage();
     const { updateDailyGoal } = useWaterGoal();
     const currentTheme = isDarkMode ? darkTheme : lightTheme;
-    const [name, setName] = useState('');
     const [gender, setGender] = useState<Gender>('');
+
     const [weight, setWeight] = useState('');
     const [activityLevel, setActivityLevel] = useState<ActivityLevel | ''>('');
     const [temperature, setTemperature] = useState<Temperature | ''>('');
@@ -35,7 +35,7 @@ const WaterIntakeGuideScreen = () => {
     };
 
     const calculateWaterIntake = () => {
-        if (!name || !gender || !weight || !activityLevel || !temperature) {
+        if (!gender || !weight || !activityLevel || !temperature) {
             Alert.alert(t('missingInfo'), t('fillAllFields'));
             return;
         }
@@ -62,12 +62,12 @@ const WaterIntakeGuideScreen = () => {
         Alert.alert(
             t('dailyWaterIntakeGoal'),
             t('recommendedIntake')
-                .replace('${name}', name)
                 .replace('${mlIntake}', mlIntake.toString())
                 .replace('${weight}', weight)
                 .replace('${activityLevel}', t(activityLevel))
                 .replace('${temperature}', t(temperature))
                 .replace('${gender}', t(gender)),
+
             [
                 {
                     text: t('cancel'),
@@ -93,20 +93,8 @@ const WaterIntakeGuideScreen = () => {
         <ScrollView style={[waterIntakeGuideStyles.container, { backgroundColor: currentTheme.colors.background }]}>
             <Text style={[waterIntakeGuideStyles.title, { color: currentTheme.colors.primary }]}>{t('waterIntakeGuide')}</Text>
             
-            <Text style={[waterIntakeGuideStyles.label, { color: currentTheme.colors.text }]}>{t('name')}</Text>
-            <TextInput
-                style={[waterIntakeGuideStyles.input, {
-                    borderColor: currentTheme.colors.primary,
-                    backgroundColor: currentTheme.colors.surface,
-                    color: currentTheme.colors.text
-                }]}
-                placeholder={t('enterName')}
-                placeholderTextColor={currentTheme.colors.textSecondary}
-                value={name}
-                onChangeText={setName}
-            />
-
             <Text style={[waterIntakeGuideStyles.label, { color: currentTheme.colors.text }]}>{t('gender')}</Text>
+
             <View style={[waterIntakeGuideStyles.pickerContainer, {
                 borderColor: currentTheme.colors.primary,
                 backgroundColor: currentTheme.colors.surface

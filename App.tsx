@@ -36,6 +36,7 @@ import { AchievementProvider } from './contexts/AchievementContext';
 import { WaterGoalProvider } from './contexts/WaterGoalContext';
 
 import { LeaderboardProvider } from './contexts/LeaderboardContext';
+import { UserProvider } from './contexts/UserContext';
 
 // Themes
 import { lightTheme, darkTheme } from './styles/theme';
@@ -160,15 +161,49 @@ const AppTabs: React.FC = () => {
 
 const AppNavigator: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(true);
-  const { isDarkMode } = useTheme();
-
-  const currentTheme = isDarkMode ? darkTheme : lightTheme;
 
   React.useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
-    }, 2500); // Show splash screen for 2.5 seconds
+    }, 2500);
   }, []);
+
+  if (isLoading) {
+    return <SplashScreen />;
+  }
+
+  return (
+    <Stack.Navigator 
+      screenOptions={{
+        headerShown: false,
+        animation: 'slide_from_right'
+      }}
+      initialRouteName="Login"
+    >
+      <Stack.Screen 
+        name="Login" 
+        component={LoginScreen}
+        options={{ gestureEnabled: false }}
+      />
+      <Stack.Screen 
+        name="Signup" 
+        component={SignupScreen}
+        options={{ gestureEnabled: false }}
+      />
+      <Stack.Screen 
+        name="MainApp" 
+        component={AppTabs}
+        options={{ gestureEnabled: false }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+
+
+const ThemedApp: React.FC = () => {
+  const { isDarkMode } = useTheme();
+  const currentTheme = isDarkMode ? darkTheme : lightTheme;
 
   const navigationTheme = {
     dark: isDarkMode,
@@ -179,88 +214,32 @@ const AppNavigator: React.FC = () => {
       text: currentTheme.colors.text,
       border: currentTheme.colors.border,
       notification: currentTheme.colors.danger,
-    },
-    fonts: {
-      regular: {
-        fontFamily: Platform.select({
-          ios: 'System',
-          android: 'Roboto',
-          default: 'System-ui',
-        }),
-        fontWeight: 'normal',
-      },
-      medium: {
-        fontFamily: Platform.select({
-          ios: 'System',
-          android: 'Roboto',
-          default: 'System-ui',
-        }),
-        fontWeight: '500',
-      },
-      bold: {
-        fontFamily: Platform.select({
-          ios: 'System',
-          android: 'Roboto',
-          default: 'System-ui',
-        }),
-        fontWeight: 'bold',
-      },
-      heavy: {
-        fontFamily: Platform.select({
-          ios: 'System',
-          android: 'Roboto',
-          default: 'System-ui',
-        }),
-        fontWeight: '900',
-      },
     }
-  } as const;
-
-
+  };
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      {isLoading ? (
-        <SplashScreen />
-      ) : (
-        <Stack.Navigator 
-          screenOptions={{ headerShown: false }}
-          initialRouteName="Login"
-        >
-          <Stack.Screen 
-          name="Login" 
-          component={LoginScreen}
-          />
-          <Stack.Screen 
-          name="Signup" 
-          component={SignupScreen}
-          />
-          <Stack.Screen 
-          name="MainApp" 
-          component={AppTabs}
-          />
-        </Stack.Navigator>
-      )}
+      <LanguageProvider>
+        <UserProvider>
+          <WaterGoalProvider>
+            <AchievementProvider>
+              <LeaderboardProvider>
+                <AppNavigator />
+              </LeaderboardProvider>
+            </AchievementProvider>
+          </WaterGoalProvider>
+        </UserProvider>
+      </LanguageProvider>
     </NavigationContainer>
   );
-
 };
-
 
 export default function App() {
   return (
     <ThemeProvider>
-      <LanguageProvider>
-      <WaterGoalProvider>
-        <AchievementProvider>
-        <LeaderboardProvider>
-          <AppNavigator />
-        </LeaderboardProvider>
-        </AchievementProvider>
-      </WaterGoalProvider>
-      </LanguageProvider>
+      <ThemedApp />
     </ThemeProvider>
-
   );
 }
+
 

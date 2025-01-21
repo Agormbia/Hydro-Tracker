@@ -16,13 +16,14 @@
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-community/slider": "4.5.5",
     "@react-native-picker/picker": "2.9.0",
-    "@react-navigation/bottom-tabs": "^6.5.11",
+    "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/material-top-tabs": "^6.6.5",
-    "@react-navigation/native": "^6.1.9",
-    "@react-navigation/native-stack": "^6.9.17",
+    "@react-navigation/native": "^6.1.18",
+    "@react-navigation/native-stack": "^6.11.0",
     "expo": "^52.0.0",
     "expo-font": "~13.0.3",
     "expo-haptics": "~14.0.1",
+    "expo-image-picker": "~16.0.4",
     "expo-linear-gradient": "~14.0.2",
     "expo-status-bar": "~2.0.1",
     "react": "18.3.1",
@@ -42,8 +43,7 @@
     "react-native-tab-view": "^3.5.2",
     "react-native-vector-icons": "^10.0.3",
     "react-native-web": "~0.19.13",
-    "victory-native": "^36.8.2",
-    "expo-image-picker": "~16.0.4"
+    "victory-native": "^36.8.2"
   },
   "devDependencies": {
     "@babel/core": "^7.23.7",

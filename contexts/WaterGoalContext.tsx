@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from './UserContext';
 
 interface WaterLog {
 	time: string;
@@ -20,50 +21,8 @@ const getMillisecondsUntilMidnight = () => {
     return midnight.getTime() - now.getTime();
 };
 
-const checkDateChange = async (currentData: DailyData[], currentStreak: number, currentGoal: number) => {
-	const today = new Date().toISOString().split('T')[0];
-	const lastEntry = currentData[currentData.length - 1];
-	
-	if (!lastEntry || lastEntry.date !== today) {
-		const yesterday = new Date();
-		yesterday.setDate(yesterday.getDate() - 1);
-		const yesterdayStr = yesterday.toISOString().split('T')[0];
-		
-		const yesterdayData = currentData.find(d => d.date === yesterdayStr);
-		let newStreak = currentStreak;
-		
-		// Reset streak if yesterday's goal wasn't met
-		if (!yesterdayData || yesterdayData.intake < yesterdayData.goal) {
-			newStreak = 0;
-		}
-		
-		const newDayData = {
-			date: today,
-			intake: 0,
-			goal: currentGoal,
-			timeLog: []
-		};
-		
-		const updatedData = [...currentData, newDayData];
-		await AsyncStorage.setItem('dailyData', JSON.stringify(updatedData));
-		await AsyncStorage.setItem('streak', newStreak.toString());
-
-		
-		return {
-			updatedData,
-			newStreak,
-			resetIntake: true
-		};
-	}
-	
-	return {
-		updatedData: currentData,
-		newStreak: currentStreak,
-		resetIntake: false
-	};
-};
-
 interface WaterGoalContextType {
+
 	dailyGoal: number;
 	todayIntake: number;
 	dailyData: DailyData[];
@@ -80,15 +39,68 @@ interface WaterGoalContextType {
 const WaterGoalContext = createContext<WaterGoalContextType | undefined>(undefined);
 
 export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+	const { currentUser, updateUserScore } = useUser();
 	const [dailyGoal, setDailyGoal] = useState(2000);
 	const [todayIntake, setTodayIntake] = useState(0);
 	const [dailyData, setDailyData] = useState<DailyData[]>([]);
 	const [streak, setStreak] = useState(0);
 	const [bestStreak, setBestStreak] = useState(0);
 
+	const getStorageKeys = () => {
+		const baseKey = currentUser ? `${currentUser.username}_` : '';
+		return {
+			dailyGoal: `${baseKey}dailyWaterGoal`,
+			dailyData: `${baseKey}dailyData`,
+			streak: `${baseKey}streak`,
+			bestStreak: `${baseKey}bestStreak`
+		};
+	};
+
+	const checkDateChange = async (currentData: DailyData[], currentStreak: number, currentGoal: number) => {
+		const today = new Date().toISOString().split('T')[0];
+		const lastEntry = currentData[currentData.length - 1];
+		const keys = getStorageKeys();
+		
+		if (!lastEntry || lastEntry.date !== today) {
+			const yesterday = new Date();
+			yesterday.setDate(yesterday.getDate() - 1);
+			const yesterdayStr = yesterday.toISOString().split('T')[0];
+			
+			const yesterdayData = currentData.find(d => d.date === yesterdayStr);
+			let newStreak = currentStreak;
+			
+			if (!yesterdayData || yesterdayData.intake < yesterdayData.goal) {
+				newStreak = 0;
+			}
+			
+			const newDayData = {
+				date: today,
+				intake: 0,
+				goal: currentGoal,
+				timeLog: []
+			};
+			
+			const updatedData = [...currentData, newDayData];
+			await AsyncStorage.setItem(keys.dailyData, JSON.stringify(updatedData));
+			await AsyncStorage.setItem(keys.streak, newStreak.toString());
+			
+			return {
+				updatedData,
+				newStreak,
+				resetIntake: true
+			};
+		}
+		
+		return {
+			updatedData: currentData,
+			newStreak: currentStreak,
+			resetIntake: false
+		};
+	};
+
 	useEffect(() => {
 		loadData();
-	}, []);
+	}, [currentUser]);
 
 	useEffect(() => {
 		const scheduleNextDayCheck = () => {
@@ -126,11 +138,13 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 
 	const loadData = async () => {
+
 		try {
-			const storedGoal = await AsyncStorage.getItem('dailyWaterGoal');
-			const storedData = await AsyncStorage.getItem('dailyData');
-			const storedStreak = await AsyncStorage.getItem('streak');
-			const storedBestStreak = await AsyncStorage.getItem('bestStreak');
+			const keys = getStorageKeys();
+			const storedGoal = await AsyncStorage.getItem(keys.dailyGoal);
+			const storedData = await AsyncStorage.getItem(keys.dailyData);
+			const storedStreak = await AsyncStorage.getItem(keys.streak);
+			const storedBestStreak = await AsyncStorage.getItem(keys.bestStreak);
 			
 			if (storedGoal) {
 				setDailyGoal(parseInt(storedGoal));
@@ -162,7 +176,8 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 	const updateDailyGoal = async (goal: number) => {
 		try {
-			await AsyncStorage.setItem('dailyWaterGoal', goal.toString());
+			const keys = getStorageKeys();
+			await AsyncStorage.setItem(keys.dailyGoal, goal.toString());
 			setDailyGoal(goal);
 			
 			// Update today's goal in daily data
@@ -170,7 +185,7 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			const updatedData = dailyData.map(day => 
 				day.date === today ? { ...day, goal } : day
 			);
-			await AsyncStorage.setItem('dailyData', JSON.stringify(updatedData));
+			await AsyncStorage.setItem(keys.dailyData, JSON.stringify(updatedData));
 			setDailyData(updatedData);
 		} catch (error) {
 			console.error('Error saving daily goal:', error);
@@ -180,37 +195,39 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 	const resetProgress = async () => {
 		try {
-			// Clear all app data from AsyncStorage
+			const keys = getStorageKeys();
+			// Remove all data except daily goal
 			const keysToRemove = [
-				'dailyData',
-				'streak',
-				'bestStreak',
-				'lastLogDate',
-				'waterDrank',
-				'achievements',
-				'language',
-				'theme',
-				'dailyWaterGoal'
+				keys.streak,
+				keys.bestStreak,
+				keys.dailyData
 			];
 			await AsyncStorage.multiRemove(keysToRemove);
 
-			// Reset all state to defaults
-			setDailyData([]);
-			setTodayIntake(0);
+			// Reset all state
 			setStreak(0);
 			setBestStreak(0);
-			setDailyGoal(2000);
-
-			// Create a new entry for today with zero intake
+			
+			// Create a fresh start with only today's entry
 			const today = new Date().toISOString().split('T')[0];
 			const newDayData = {
 				date: today,
 				intake: 0,
-				goal: 2000,
+				goal: dailyGoal,
 				timeLog: []
 			};
-			await AsyncStorage.setItem('dailyData', JSON.stringify([newDayData]));
-			setDailyData([newDayData]);
+
+			const freshData = [newDayData];
+			await AsyncStorage.setItem(keys.dailyData, JSON.stringify(freshData));
+			
+			// Update state
+			setDailyData(freshData);
+			setTodayIntake(0);
+
+			// Reset user's total score if user is logged in
+			if (currentUser) {
+				await updateUserScore(currentUser.username, 0);
+			}
 
 		} catch (error) {
 			console.error('Error resetting progress:', error);
@@ -218,11 +235,14 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		}
 	};
 
+
+
 	const logWaterIntake = async (amount: number) => {
 		try {
 			const today = new Date().toISOString().split('T')[0];
 			const currentTime = new Date().toLocaleTimeString();
 			const newLog: WaterLog = { time: currentTime, amount };
+			const keys = getStorageKeys();
 			
 			let updatedData = [...dailyData];
 			const todayIndex = updatedData.findIndex(d => d.date === today);
@@ -247,15 +267,23 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			if (newIntake >= dailyGoal && todayIntake < dailyGoal) {
 				const newStreak = streak === 0 ? 1 : streak + 1;
 				setStreak(newStreak);
-				await AsyncStorage.setItem('streak', newStreak.toString());
+				await AsyncStorage.setItem(keys.streak, newStreak.toString());
 				
 				if (newStreak > bestStreak) {
 					setBestStreak(newStreak);
-					await AsyncStorage.setItem('bestStreak', newStreak.toString());
+					await AsyncStorage.setItem(keys.bestStreak, newStreak.toString());
 				}
 			}
 			
-			await AsyncStorage.setItem('dailyData', JSON.stringify(updatedData));
+			// Calculate total water intake from all time
+			if (currentUser) {
+				// Calculate total from all historical data including today's new amount
+				const totalIntake = updatedData.reduce((sum, day) => sum + day.intake, 0);
+				// Update the user's total score with the complete total
+				updateUserScore(currentUser.username, totalIntake);
+			}
+
+			await AsyncStorage.setItem(keys.dailyData, JSON.stringify(updatedData));
 			setDailyData(updatedData);
 			setTodayIntake(newIntake);
 		} catch (error) {
@@ -272,7 +300,8 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		try {
 			// Reset to default goal
 			setDailyGoal(2000);
-			await AsyncStorage.setItem('dailyWaterGoal', '2000');
+			const keys = getStorageKeys();
+			await AsyncStorage.setItem(keys.dailyGoal, '2000');
 		} catch (error) {
 			console.error('Error resetting daily goal:', error);
 			throw error;
@@ -294,7 +323,8 @@ export const WaterGoalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					timeLog: []
 				};
 				const updatedData = [...dailyData, newDayData];
-				await AsyncStorage.setItem('dailyData', JSON.stringify(updatedData));
+				const keys = getStorageKeys();
+				await AsyncStorage.setItem(keys.dailyData, JSON.stringify(updatedData));
 				setDailyData(updatedData);
 				setTodayIntake(0);
 			}

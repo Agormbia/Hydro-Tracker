@@ -7,7 +7,15 @@ module.exports = (() => {
 
 	config.transformer = {
 		...transformer,
-		babelTransformerPath: require.resolve('react-native-svg-transformer')
+		babelTransformerPath: require.resolve('react-native-svg-transformer'),
+		minifierConfig: {
+			keep_classnames: true,
+			keep_fnames: true,
+			mangle: {
+				keep_classnames: true,
+				keep_fnames: true
+			}
+		}
 	};
 	config.resolver = {
 		...resolver,
