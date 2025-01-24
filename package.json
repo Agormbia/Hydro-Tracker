@@ -6,6 +6,9 @@
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
+    "android-dev": "expo start --android --dev-client",
+    "clear-cache": "expo start --clear",
+    "reset-cache": "expo start -c",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest"
@@ -21,7 +24,8 @@
     "@react-navigation/material-top-tabs": "^6.6.5",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
-    "expo": "^52.0.0",
+    "expo": "^52.0.27",
+    "expo-dev-client": "~5.0.10",
     "expo-font": "~13.0.3",
     "expo-haptics": "~14.0.1",
     "expo-image-picker": "~16.0.4",
@@ -53,7 +57,7 @@
     "@babel/preset-typescript": "^7.23.3",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.10.6",
-    "@types/react": "~18.2.45",
+    "@types/react": "^18.3.12",
     "@types/react-native": "~0.73.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "expo-module-scripts": "^4.0.3",

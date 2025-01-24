@@ -51,4 +51,16 @@ export const loginStyles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
+	passwordContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginBottom: 15,
+		position: 'relative',
+	},
+	eyeIcon: {
+		position: 'absolute',
+		right: 15,
+		height: '100%',
+		justifyContent: 'center',
+	},
 });

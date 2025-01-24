@@ -10,6 +10,7 @@ const LoginScreen = ({ navigation }: any) => {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [rememberMe, setRememberMe] = useState(false);
+	const [showPassword, setShowPassword] = useState(false);
 	const { theme } = useTheme();
 	const { loginUser } = useUser();
 
@@ -55,7 +56,7 @@ const LoginScreen = ({ navigation }: any) => {
 
 	return (
 		<View style={[loginStyles.container, { backgroundColor: theme.colors.background }]}>
-			<Text style={[loginStyles.title, { color: theme.colors.text }]}>Hydro Tracker</Text>
+			<Text style={[loginStyles.title, { color: theme.colors.text }]}>Hydration Tracker</Text>
 			<TextInput
 				style={[loginStyles.input, { 
 					borderColor: theme.colors.border,
@@ -68,18 +69,31 @@ const LoginScreen = ({ navigation }: any) => {
 				onChangeText={setUsername}
 				autoCapitalize="none"
 			/>
-			<TextInput
-				style={[loginStyles.input, { 
-					borderColor: theme.colors.border,
-					color: theme.colors.text,
-					backgroundColor: theme.colors.surface
-				}]}
-				placeholder="Password"
-				placeholderTextColor={theme.colors.textSecondary}
-				value={password}
-				onChangeText={setPassword}
-				secureTextEntry
-			/>
+			<View style={loginStyles.passwordContainer}>
+				<TextInput
+					style={[loginStyles.input, { 
+						borderColor: theme.colors.border,
+						color: theme.colors.text,
+						backgroundColor: theme.colors.surface,
+						flex: 1
+					}]}
+					placeholder="Password"
+					placeholderTextColor={theme.colors.textSecondary}
+					value={password}
+					onChangeText={setPassword}
+					secureTextEntry={!showPassword}
+				/>
+				<TouchableOpacity 
+					style={loginStyles.eyeIcon} 
+					onPress={() => setShowPassword(!showPassword)}
+				>
+					<Ionicons 
+						name={showPassword ? "eye-off" : "eye"} 
+						size={24} 
+						color={theme.colors.text} 
+					/>
+				</TouchableOpacity>
+			</View>
 			<View style={loginStyles.rememberMeContainer}>
 				<TouchableOpacity 
 					style={[loginStyles.checkbox, { borderColor: theme.colors.border }]} 
